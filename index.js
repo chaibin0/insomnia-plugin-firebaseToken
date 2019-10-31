@@ -3,6 +3,8 @@ const axios = require('axios');
 module.exports.requestHooks = [
     async context => {
         const auth = context.request.getAuthentication();
+        
+        //auth의 있을 경우만 실행
         if (Object.keys(auth).length === 0) {
             return;
         }
@@ -24,8 +26,8 @@ module.exports.requestHooks = [
 ];
 
 module.exports.templateTags = [{
-    name: 'idToken',
-    displayName: 'firebase idToken or Oauth access token',
+    name: 'firebaseOuthToken',
+    displayName: 'firebase-token',
     description: "get firebase ID token or oauth2 access token",
     args: [{
             displayName: 'firebase API Key',
