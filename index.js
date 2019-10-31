@@ -3,7 +3,7 @@ const axios = require('axios');
 module.exports.requestHooks = [
     async context => {
         const auth = context.request.getAuthentication();
-        
+
         //auth의 있을 경우만 실행
         if (Object.keys(auth).length === 0) {
             return;
@@ -28,11 +28,11 @@ module.exports.requestHooks = [
 module.exports.templateTags = [{
     name: 'firebaseOuthToken',
     displayName: 'firebase-token',
-    description: "get firebase ID token or oauth2 access token",
+    description: "get firebase ID token by google OAuth2, or oauth2 access token that is always not expired",
     args: [{
             displayName: 'firebase API Key',
             type: 'string',
-            help: 'refresh하거나 첫인증할 때 사용합니다.'
+            help: 'use refresh token or uthorization at first time'
         },
         {
             displayName: 'providerId',
@@ -53,6 +53,7 @@ module.exports.templateTags = [{
             }]
         }
     ],
+
     async run(context, key, id, isIdToken) {
         if (!key) {
             throw new Error('undefined firebase api key');
@@ -67,10 +68,15 @@ module.exports.templateTags = [{
 
             if (await context.store.hasItem('idToken')) { //id토큰이 존재
 
-                //access Token이 만료가 되었다면 refresh,
-                //insomnia access token에 화면은 변하지 않지만 access token은 변경된다.
+                //if access Token is expired, refresh token
+                //access token window don't change in insomnia program, but change access token
                 if (await expiredAccessToken(accessToken)) {
-                    return await refreshToken(context, key, id, isIdToken); //change
+
+                    if (!context.store.hasItem('refreshToken')) {
+                        throw new Error('expired oAuth2Token');
+                    }
+
+                    return await refreshToken(context, key, id, isIdToken);
                 }
 
                 if (isIdToken == 1) {
@@ -82,7 +88,7 @@ module.exports.templateTags = [{
             }
         }
 
-        //첫 호출시 아이디 인증한다
+        //첫 호출시 access token을 인증한다
         const authId = await context.store.getItem('authId');
         if (!authId) {
             throw new Error('send Login API And fetch access token');
@@ -94,7 +100,10 @@ module.exports.templateTags = [{
         }
 
         await context.store.setItem('accessToken', token.accessToken);
-        await context.store.setItem('refreshToken', token.refreshToken);
+
+        if (token.refreshToken) {
+            await context.store.setItem('refreshToken', token.refreshToken);
+        }
         const redirectUrl = await context.store.getItem('redirectUrl');
         const accessToken = token.accessToken;
 
@@ -116,7 +125,7 @@ module.exports.templateTags = [{
     }
 }];
 
-
+//access token 만료 여부를 구하는 메소드
 async function expiredAccessToken(accessToken) {
 
     try {
@@ -128,6 +137,7 @@ async function expiredAccessToken(accessToken) {
 
 }
 
+//refresh된 access token을 반환하는 메소드
 async function getRefreshedAccessToken(refreshToken, clientId, clientSecret) {
 
     const param = {
@@ -145,6 +155,8 @@ async function getRefreshedAccessToken(refreshToken, clientId, clientSecret) {
     }
 }
 
+
+//accesstoken을 이용해서 인증하고 ID token을 반환하는 메소드
 async function getFirebaseIdToken(accessToken, key, id, redirectUrl) {
 
     const param = {
@@ -162,6 +174,7 @@ async function getFirebaseIdToken(accessToken, key, id, redirectUrl) {
 
 }
 
+//Token을 refresh하는 메소드
 async function refreshToken(context, key, id, isIdToken) {
     console.log('refreshed');
 
