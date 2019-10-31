@@ -1,0 +1,17 @@
+{
+  "name": "insomnia-plugin-firebase-idtoken",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "insomnia": {
+    "name": "chaibin",
+    "description": "insomnia plugin OAuth 2 access token convert into firebase ID token"
+  },
+  "dependencies": [],
+  "devDependencies": []
+}
