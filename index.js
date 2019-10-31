@@ -25,8 +25,8 @@ module.exports.requestHooks = [
 
 module.exports.templateTags = [{
     name: 'idToken',
-    displayName: 'firebase idToken',
-    description: "get firebase ID token using oauth2 access token",
+    displayName: 'firebase idToken or Oauth access token',
+    description: "get firebase ID token or oauth2 access token",
     args: [{
             displayName: 'firebase API Key',
             type: 'string',
@@ -36,14 +36,22 @@ module.exports.templateTags = [{
             displayName: 'providerId',
             type: 'enum',
             options: [{
-                    displayName: 'google',
-                    value: 'google.com',
-                },
-            ]
+                displayName: 'google',
+                value: 'google.com',
+            }, ]
+        }, {
+            displayName: 'idToken or acceess Token',
+            type: 'enum',
+            options: [{
+                displayName: 'firebase idToken',
+                value: 1
+            }, {
+                displayName: 'Google Oauth2 access token',
+                value: 0
+            }]
         }
     ],
-    async run(context, key, id) {
-
+    async run(context, key, id, isIdToken) {
         if (!key) {
             throw new Error('undefined firebase api key');
         }
@@ -60,10 +68,15 @@ module.exports.templateTags = [{
                 //access Token이 만료가 되었다면 refresh,
                 //insomnia access token에 화면은 변하지 않지만 access token은 변경된다.
                 if (await expiredAccessToken(accessToken)) {
-                    return await refreshIdToken(context, key, id); //change
+                    return await refreshToken(context, key, id, isIdToken); //change
                 }
 
-                return await context.store.getItem('idToken');
+                if (isIdToken == 1) {
+                    return await context.store.getItem('idToken');
+                }
+
+                return accessToken;
+
             }
         }
 
@@ -92,79 +105,8 @@ module.exports.templateTags = [{
             const idToken = await getFirebaseIdToken(accessToken, key, id, redirectUrl);
             await context.store.setItem('idToken', idToken);
 
-            return idToken;
+            return isIdToken == 1 ? idToken : accessToken;
 
-        } catch (e) {
-            console.log(e);
-            throw new Error('invalid APIKey or providerId');
-        }
-    }
-}, {
-    name: 'google_access_Token',
-    displayName: 'google access Token',
-    description: 'get google oauth2 access token refreshed',
-    args: [{
-            displayName: 'firebase web api Key',
-            type: 'string',
-            help: 'refresh하거나 첫인증할 때 사용합니다.'
-        },
-        {
-            displayName: 'providerId',
-            type: 'enum',
-            options: [{
-                    displayName: 'google',
-                    value: 'google.com',
-                },
-            ]
-        }
-    ],
-
-    async run(context, key, id) {
-        if (!key) {
-            throw new Error('undefined firebase api key');
-        }
-        if (!id) {
-            throw new Error('undefined ProviderID');
-        }
-
-        if (await context.store.hasItem('accessToken')) {
-            let accessToken = await context.store.getItem('accessToken');
-
-            if (await context.store.hasItem('idToken')) {
-                if (await expiredAccessToken(accessToken)) {
-                    return await refreshAccessToken(context, key, id);
-                }
-
-                return accessToken;
-            }
-        }
-
-        const authId = await context.store.getItem('authId');
-        if (!authId) {
-            throw new Error('send Login API And fetch access token');
-        }
-
-        const token = await context.util.models.oAuth2Token.getByRequestId(authId);
-        if (!token) {
-            throw new Error('invalided oAuth2Token');
-        }
-
-        const addAccessToken = await context.store.setItem('accessToken', token.accessToken);
-        const addRefreshToken = await context.store.setItem('refreshToken', token.refreshToken);
-        const redirectUrl = await context.store.getItem('redirectUrl');
-
-        await Promise.all([addAccessToken, addRefreshToken, redirectUrl]);
-        const accessToken = token.accessToken;
-
-        if (!accessToken) {
-            throw new Error('not exist accessToken');
-        }
-
-        try {
-
-            const idToken = await getFirebaseIdToken(accessToken, key, id, redirectUrl);
-            await context.store.setItem('idToken', idToken);
-            return accessToken;
         } catch (e) {
             console.log(e);
             throw new Error('invalid APIKey or providerId');
@@ -218,7 +160,7 @@ async function getFirebaseIdToken(accessToken, key, id, redirectUrl) {
 
 }
 
-async function refreshIdToken(context, key, id) {
+async function refreshToken(context, key, id, isIdToken) {
     console.log('refreshed');
 
     const clientId = await context.store.getItem('clientId');
@@ -232,23 +174,5 @@ async function refreshIdToken(context, key, id) {
     const addIdToken = context.store.setItem('idToken', idToken);
     await Promise.all([addAccessToken, addIdToken]);
 
-    return idToken;
-}
-
-async function refreshAccessToken(context, key, id) {
-    console.log('refreshed');
-
-    const clientId = await context.store.getItem('clientId');
-    const clientSecret = await context.store.getItem('clientSecret');
-    const refreshToken = await context.store.getItem('refreshToken');
-    const redirectUrl = await context.store.getItem('redirectUrl');
-
-    const accessToken = await getRefreshedAccessToken(refreshToken, clientId, clientSecret);
-    const idToken = await getFirebaseIdToken(accessToken, key, id, redirectUrl);
-
-    const addAccessToken = context.store.setItem('accessToken', accessToken);
-    const addIdToken = context.store.setItem('idToken', idToken);
-    await Promise.all([addAccessToken, addIdToken]);
-
-    return accessToken;
+    return isIdToken == 1 ? idToken : accessToken;
 }
