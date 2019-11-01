@@ -22,6 +22,7 @@ module.exports.requestHooks = [
         if (await context.store.hasItem('idToken')) {
             await context.store.removeItem('idToken')
         }
+
     }
 ];
 
@@ -46,10 +47,10 @@ module.exports.templateTags = [{
             type: 'enum',
             options: [{
                 displayName: 'firebase idToken',
-                value: 1
+                value: 1,
             }, {
                 displayName: 'Google Oauth2 access token',
-                value: 0
+                value: 0,
             }]
         }
     ],
@@ -72,7 +73,7 @@ module.exports.templateTags = [{
                 //access token window don't change in insomnia program auth tab, but change access token
                 if (await expiredAccessToken(accessToken)) {
 
-                    if (!context.store.hasItem('refreshToken')) {
+                    if (!(await context.store.hasItem('refreshToken'))) {
                         throw new Error('expired oAuth2Token');
                     }
 
@@ -115,7 +116,7 @@ module.exports.templateTags = [{
 
             const idToken = await getFirebaseIdToken(accessToken, key, id, redirectUrl);
             await context.store.setItem('idToken', idToken);
-
+            
             return isIdToken == 1 ? idToken : accessToken;
 
         } catch (e) {
