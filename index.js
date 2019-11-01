@@ -28,11 +28,11 @@ module.exports.requestHooks = [
 module.exports.templateTags = [{
     name: 'firebaseOuthToken',
     displayName: 'firebase-token',
-    description: "get firebase ID token by google OAuth2, or oauth2 access token that is always not expired",
+    description: "get firebase ID token by google OAuth2, or oauth2 access token refreshed",
     args: [{
             displayName: 'firebase API Key',
             type: 'string',
-            help: 'use refresh token or uthorization at first time'
+            help: 'use refresh token or authorization at first time'
         },
         {
             displayName: 'providerId',
@@ -69,7 +69,7 @@ module.exports.templateTags = [{
             if (await context.store.hasItem('idToken')) { //id토큰이 존재
 
                 //if access Token is expired, refresh token
-                //access token window don't change in insomnia program, but change access token
+                //access token window don't change in insomnia program auth tab, but change access token
                 if (await expiredAccessToken(accessToken)) {
 
                     if (!context.store.hasItem('refreshToken')) {
@@ -91,7 +91,7 @@ module.exports.templateTags = [{
         //첫 호출시 access token을 인증한다
         const authId = await context.store.getItem('authId');
         if (!authId) {
-            throw new Error('send Login API And fetch access token');
+            throw new Error('do not send Login API And fetch access token');
         }
 
         const token = await context.util.models.oAuth2Token.getByRequestId(authId);
@@ -127,14 +127,12 @@ module.exports.templateTags = [{
 
 //access token 만료 여부를 구하는 메소드
 async function expiredAccessToken(accessToken) {
-
     try {
         await axios.post(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
         return false;
     } catch {
         return true;
     }
-
 }
 
 //refresh된 access token을 반환하는 메소드
@@ -176,7 +174,7 @@ async function getFirebaseIdToken(accessToken, key, id, redirectUrl) {
 
 //Token을 refresh하는 메소드
 async function refreshToken(context, key, id, isIdToken) {
-    console.log('refreshed');
+    console.log('refreshed token');
 
     const clientId = await context.store.getItem('clientId');
     const clientSecret = await context.store.getItem('clientSecret');

@@ -1,5 +1,5 @@
 {
-  "name": "insomnia-plugin-firebase-idtoken",
+  "name": "insomnia-plugin-firebase-token",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
