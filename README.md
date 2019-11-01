@@ -1,11 +1,15 @@
+
+Sign in firebase using OAuth2 access token and return firebase ID token or OAuth access token
+If token have refresh token, Auto refresh access token and Id token.
+
 ## install
-Application -> Prefereces -> Plugins -> Show Plugins Folder에 있는 장소에 설치
+location : Application -> Prefereces -> Plugins -> Show Plugins Folder
 
 ## how to
 
-### 1. 로그인할 임시 REST API를 설정한다.
+### 1. configure OAuth 2 (just use to store OAuth2 info, don't have to make url)
 
-OAuth2 탭을 이용한다.
+configure OAuth2
 
 GRANT CODE : Authorization Code
 
@@ -19,24 +23,26 @@ CLIENT SECRET : [client_secret]
 
 REDIRECT URL : [redirect_url]
 
-SCOPE : https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid
+SCOPE : https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
 ![img1](./screenShot/img1.png)
 
 
 ### 2. Send
-OAuth2 가 적용된 RSET API를 Send 한다.
+push send button REST API configured OAuth2 (don't need url)
 
-### 3. 다른 REST API의 Header에 추가한다.
+### 3. Add header in other rest API 
+at that time, signin firebase using OAuth2 google access token
+don't configure OAuth2 tab (config no authentication)
+
 Key(Header Name) : Authorization
-
-Value : (Bearer ) Ctrl+Space해서 (firebase Token)을 누르고 firebase_API_Key와 providerId, token종류를 입력한다.
+Value : (Bearer ) Ctrl+Space해서 click the firebase-Token and write firebase_API_Key, providerId and token
 
 ![img2](./screenShot/img2.png)
 ![img3](./screenShot/img3.png)
-
-1번 로그인 API를 제외하고 Auth 설정은 하지 않는다.
+![img4](./screenShot/img4.png)
 
 
 ## 제안사항
-OAuth 2.0의 google 계정만 가능하다.
-Auth2탭에서 refresh token이 존재하지 않으면 1시간 후에 만료가 되버린다.
+only possible google account.
+need firebase account and link to google authentication(Web Client).
+If token don't have refresh token, expired access token and ID token in 1 hour.
