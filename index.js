@@ -9,19 +9,13 @@ module.exports.requestHooks = [
             return;
         }
 
+        await context.store.clear();
         const addItem1 = context.store.setItem('authId', context.request.getId());
         const addItem2 = context.store.setItem('clientId', auth.clientId);
         const addItem3 = context.store.setItem('clientSecret', auth.clientSecret);
         const addItem4 = context.store.setItem('redirectUrl', auth.redirectUrl);
 
         await Promise.all([addItem1, addItem2, addItem3, addItem4]);
-
-        if (await context.store.hasItem('accessToken')) {
-            await context.store.removeItem('accessToken')
-        }
-        if (await context.store.hasItem('idToken')) {
-            await context.store.removeItem('idToken')
-        }
 
     }
 ];
@@ -183,7 +177,7 @@ async function refreshToken(context, key, id, isIdToken) {
     const redirectUrl = await context.store.getItem('redirectUrl');
     const accessToken = await getRefreshedAccessToken(refreshToken, clientId, clientSecret);
     const idToken = await getFirebaseIdToken(accessToken, key, id, redirectUrl);
-
+    
     const addAccessToken = context.store.setItem('accessToken', accessToken);
     const addIdToken = context.store.setItem('idToken', idToken);
     await Promise.all([addAccessToken, addIdToken]);

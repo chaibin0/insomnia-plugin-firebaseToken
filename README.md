@@ -1,5 +1,6 @@
 
 Sign in firebase using OAuth2 access token and return firebase ID token or OAuth access token
+
 If token have refresh token, Auto refresh access token and Id token.
 
 ## install
@@ -32,9 +33,11 @@ push send button REST API configured OAuth2 (don't need url)
 
 ### 3. Add header in other rest API 
 at that time, signin firebase using OAuth2 google access token
+
 don't configure OAuth2 tab (config no authentication)
 
 Key(Header Name) : Authorization
+
 Value : (Bearer ) Ctrl+Space해서 click the firebase-Token and write firebase_API_Key, providerId and token
 
 ![img2](./screenShot/img2.png)
@@ -44,5 +47,7 @@ Value : (Bearer ) Ctrl+Space해서 click the firebase-Token and write firebase_A
 
 ## 제안사항
 only possible google account.
+
 need firebase account and link to google authentication(Web Client).
+
 If token don't have refresh token, expired access token and ID token in 1 hour.
