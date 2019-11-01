@@ -1,5 +1,6 @@
 const axios = require('axios');
 
+
 module.exports.requestHooks = [
     async context => {
         const auth = context.request.getAuthentication();
