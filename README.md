@@ -29,17 +29,13 @@ SCOPE : https://www.googleapis.com/auth/userinfo.email https://www.googleapis.co
 
 
 ### 2. Send
-push send button REST API configured OAuth2 (don't need url)
+push send button REST API configured OAuth2
 
 ### 3. Add header in other rest API 
-at that time, signin firebase using OAuth2 google access token
-
-don't configure OAuth2 tab (config no authentication)
 
 Key(Header Name) : Authorization
 
-Value : (Bearer ) Ctrl+Space해서 click the firebase-Token and write firebase_API_Key, providerId and token
-
+Value : (Bearer ) (Ctrl+Space) click the "firebase-Token" and write "firebase API Key", "providerId" and "token"
 ![img2](./screenShot/img2.png)
 ![img3](./screenShot/img3.png)
 ![img4](./screenShot/img4.png)
